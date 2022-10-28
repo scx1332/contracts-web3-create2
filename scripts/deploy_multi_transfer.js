@@ -16,11 +16,10 @@ async function getContractFactoryAbi() {
     return contract.abi;
 }
 
-function buildCreate2Address(creatorAddress, saltHex, bytecodeHash) {
-    let data = ['ff', creatorAddress, saltHex, bytecodeHash].map(x => x.replace('0x', '')).join('');
-    let contractAddr = ethers.utils.keccak256(`0x${data}`).slice(-40);
-    return `0x${contractAddr}`;
+function prepareHashData(creatorAddress, saltHex, bytecodeHash) {
+    return ['ff', creatorAddress, saltHex, bytecodeHash].map(x => x.replace('0x', '')).join('');
 }
+
 
 function encodeParam(dataType, data) {
     const provider = new ethers.providers.JsonRpcProvider();
@@ -57,23 +56,38 @@ async function main() {
     const factoryAddress = process.env.CONTRACT_FACTORY;
 
     let saltNum = BigInt(1);
-    let saltStr = "";
+    let saltStr = "0xTEMPLATETEMPLATETEMPLATETEMPLATE";
     let contractAddr = "";
-    console.log("Searching for contract address...");
-
     let bytecodeHash = ethers.utils.keccak256(bytecode);
 
-    while (true) {
-        saltStr = "0x" + saltNum.toString(16).padStart(32, '0');
-        contractAddr = buildCreate2Address(factoryAddress, saltStr, bytecodeHash);
-        if (contractAddr.startsWith(config.contractPrefix)){
-            console.log(`Computed address: ${contractAddr} with salt: ${saltStr}`);
-            break;
+    let preparedHashTemplate = prepareHashData(factoryAddress, saltStr, bytecodeHash);
+    console.log("Prepared hash template for create2:", preparedHashTemplate);
+    if (process.env.PREPARE_SALT_ONLY === "1") {
+        console.log("PREPARE_SALT_ONLY is set, exiting");
+        return;
+    }
+    if (process.env.USE_PREDEFINED_SALT === "1") {
+        console.log("USE_PREDEFINED_SALT is set, using predefined salt");
+        saltStr = process.env.PREDEFINED_SALT;
+        let data = preparedHashTemplate.replace("TEMPLATETEMPLATETEMPLATETEMPLATE", saltStr);
+        contractAddr = "0x" + ethers.utils.keccak256(`0x${data}`).slice(-40);
+    }
+    else {
+        const prefix = config.contractPrefix.toLowerCase();
+        console.log("Searching for contract address with prefix: " + prefix);
+        while (true) {
+            saltStr = saltNum.toString(16).padStart(32, '0');
+            let data = preparedHashTemplate.replace("TEMPLATETEMPLATETEMPLATETEMPLATE", saltStr);
+            contractAddr = "0x" + ethers.utils.keccak256(`0x${data}`).slice(-40);
+            if (contractAddr.startsWith(prefix)){
+                console.log(`Computed address: ${contractAddr} with salt: ${saltStr}`);
+                break;
+            }
+            saltNum += BigInt(1);
         }
-        saltNum += BigInt(1);
     }
     let deployer = new ethers.Contract(factoryAddress, await getContractFactoryAbi(), signer);
-    let tx = await deployer.deploy(bytecode, saltStr);
+    let tx = await deployer.deploy(bytecode, "0x" + saltStr);
 
     console.log(`Contract deployed to address: ${contractAddr}. Tx id: ${tx.hash}`);
 }
