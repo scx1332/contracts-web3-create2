@@ -4,11 +4,10 @@ require("@nomicfoundation/hardhat-toolbox");
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-    defaultNetwork: "rinkeby",
+    defaultNetwork: "mumbai",
     networks: {
-        hardhat: {},
-        rinkeby: {
-            url: "https://eth-rinkeby.alchemyapi.io/v2/123abc123abc123abc123abc123abcde",
+        mumbai: {
+            url: process.env.MUMBAI_RPC,
             accounts: [process.env.PRIVATE_KEY]
         }
     },

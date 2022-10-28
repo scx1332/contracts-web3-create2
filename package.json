@@ -1,6 +1,7 @@
 {
     "scripts": {
-        "start": "hardhat build"
+        "compile": "hardhat compile",
+        "deploy_mumbai": "hardhat run --network mumbai scripts/deploy.js"
     },
     "dependencies": {
         "@nomicfoundation/hardhat-toolbox": "^2.0.0",
