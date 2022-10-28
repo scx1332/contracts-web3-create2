@@ -16,9 +16,8 @@ async function getContractFactoryAbi() {
     return contract.abi;
 }
 
-function buildCreate2Address(creatorAddress, saltHex, byteCode) {
-    let byteCodeSha = ethers.utils.keccak256(byteCode);
-    let data = ['ff', creatorAddress, saltHex, byteCodeSha].map(x => x.replace('0x', '')).join('');
+function buildCreate2Address(creatorAddress, saltHex, bytecodeHash) {
+    let data = ['ff', creatorAddress, saltHex, bytecodeHash].map(x => x.replace('0x', '')).join('');
     let contractAddr = ethers.utils.keccak256(`0x${data}`).slice(-40);
     return `0x${contractAddr}`;
 }
@@ -61,9 +60,12 @@ async function main() {
     let saltStr = "";
     let contractAddr = "";
     console.log("Searching for contract address...");
+
+    let bytecodeHash = ethers.utils.keccak256(bytecode);
+
     while (true) {
         saltStr = "0x" + saltNum.toString(16).padStart(32, '0');
-        contractAddr = buildCreate2Address(factoryAddress, saltStr, bytecode);
+        contractAddr = buildCreate2Address(factoryAddress, saltStr, bytecodeHash);
         if (contractAddr.startsWith(config.contractPrefix)){
             console.log(`Computed address: ${contractAddr} with salt: ${saltStr}`);
             break;
