@@ -1,7 +1,9 @@
-pragma solidity >0.4.99;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8;
 
-contract Factory {
-    event Deployed(address addr, uint256 salt);
+// Contract Factory is needed to deploy other contracts using create2 opcode
+contract ContractFactory {
+    event ContractDeployed(address addr, uint256 salt);
 
     function deploy(bytes memory code, uint256 salt) public {
         address addr;
@@ -12,6 +14,6 @@ contract Factory {
             }
         }
 
-        emit Deployed(addr, salt);
+        emit ContractDeployed(addr, salt);
     }
 }
