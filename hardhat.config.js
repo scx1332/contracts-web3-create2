@@ -1,7 +1,6 @@
 require('dotenv').config({path:__dirname+'/.env'})
 
 require("@nomicfoundation/hardhat-toolbox");
-require("@nomiclabs/hardhat-web3");
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -11,7 +10,7 @@ module.exports = {
             url: process.env.MUMBAI_RPC,
             accounts: [process.env.PRIVATE_KEY],
             glmToken: "0x2036807b0b3aaf5b1858ee822d0e111fddac7018",
-            contractPrefix: "0x111"
+            contractPrefix: "0x11111"
         }
     },
     solidity: {

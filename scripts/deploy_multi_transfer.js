@@ -43,30 +43,26 @@ async function main() {
     let balance = await provider.getBalance(pubAddr);
     console.log(`Using account ${pubAddr} Account balance: ${balance}`);
 
-    //load MultiTransferERC20.json
+    //load MultiTransferERC20.json bytecode, compile contract first if not working
     const contractName = "MultiTransferERC20"
     let compiledContract = await fs.readFile(`artifacts/contracts/${contractName}.sol/${contractName}.json`);
     const contract = JSON.parse(compiledContract);
-    const abi = contract.abi;
     const contractBytecode = contract.bytecode;
 
-    //console.log("ABI:", abi);
-    //console.log("Bytecode:", bytecode);
-    let constructorParams = encodeParam('address', config.glmToken).slice(2);
+    //handle constructor params for contract
+    let constructorParams = hre.ethers.utils.defaultAbiCoder.encode(['address'], [config.glmToken]).slice(2);
     console.log("Constructor params:", constructorParams);
-    const bytecode = `${contractBytecode}${constructorParams}`
 
+    const bytecode = `${contractBytecode}${constructorParams}`
 
     const factoryAddress = process.env.CONTRACT_FACTORY;
 
-
-    let saltNum = BigInt(234567890);
+    let saltNum = BigInt(1);
     let saltStr = "";
     let contractAddr = "";
     console.log("Searching for contract address...");
     while (true) {
         saltStr = "0x" + saltNum.toString(16).padStart(32, '0');
-        console.log(saltStr);
         contractAddr = buildCreate2Address(factoryAddress, saltStr, bytecode);
         if (contractAddr.startsWith(config.contractPrefix)){
             console.log(`Computed address: ${contractAddr} with salt: ${saltStr}`);
