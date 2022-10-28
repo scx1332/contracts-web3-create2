@@ -1,3 +1,5 @@
+require('dotenv').config({path:__dirname+'/.env'})
+
 require("@nomicfoundation/hardhat-toolbox");
 
 /** @type import('hardhat/config').HardhatUserConfig */
@@ -7,7 +9,7 @@ module.exports = {
         hardhat: {},
         rinkeby: {
             url: "https://eth-rinkeby.alchemyapi.io/v2/123abc123abc123abc123abc123abcde",
-            accounts: [privateKey1, privateKey2, ...]
+            accounts: [process.env.PRIVATE_KEY]
         }
     },
     solidity: {
