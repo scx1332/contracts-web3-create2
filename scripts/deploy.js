@@ -28,12 +28,9 @@ function encodeParam(dataType, data) {
 
     return web3.eth.abi.encodeParameter(dataType, data)
 }
-function numberToUint256(value) {
-    const hex = value.toString(16)
-    return `0x${'0'.repeat(64-hex.length)}${hex}`
-}
 
 async function main() {
+    let config = hre.network.config;
     if (process.env.CONTRACT_FACTORY == undefined) {
         console.log("Deploy contract factory first and set CONTRACT_FACTORY address in .env file");
         return;
@@ -55,35 +52,32 @@ async function main() {
 
     //console.log("ABI:", abi);
     //console.log("Bytecode:", bytecode);
-    const bytecode = `${contractBytecode}${encodeParam('address', pubAddr).slice(2)}`
+    let constructorParams = encodeParam('address', config.glmToken).slice(2);
+    console.log("Constructor params:", constructorParams);
+    const bytecode = `${contractBytecode}${constructorParams}`
 
 
     const factoryAddress = process.env.CONTRACT_FACTORY;
-    let salt = 9;
-    let addr = buildCreate2Address(factoryAddress, numberToUint256(salt), bytecode);
-    console.log("Computed address:", addr);
 
 
+    let saltNum = BigInt(234567890);
+    let saltStr = "";
+    let contractAddr = "";
+    console.log("Searching for contract address...");
+    while (true) {
+        saltStr = "0x" + saltNum.toString(16).padStart(32, '0');
+        console.log(saltStr);
+        contractAddr = buildCreate2Address(factoryAddress, saltStr, bytecode);
+        if (contractAddr.startsWith(config.contractPrefix)){
+            console.log(`Computed address: ${contractAddr} with salt: ${saltStr}`);
+            break;
+        }
+        saltNum += BigInt(1);
+    }
     let deployer = new ethers.Contract(factoryAddress, await getContractFactoryAbi(), signer);
+    let tx = await deployer.deploy(bytecode, saltStr);
 
-    //const bytecodeParam = ethers.utils.defaultAbiCoder.encode(['bytes', 'address'], [bytecode, pubAddr]);
-    //let computedAddr = deployer.callStatic.deploy(bytecode, salt);
-
-    let tx = await deployer.deploy(bytecode, numberToUint256(salt));
-  //  let txDeploy = deployer.populateTransaction.deploy(bytecode, salt);
-
-//    let tx = await signer.sendTransaction(txDeploy);
-
-
-    //let balance = await provider.getBalance(pubAddr);
-    //console.log(`Using account ${pubAddr} Account balance: ${balance}`);
-
-
-
-
-
-
-
+    console.log(`Contract deployed to address: ${contractAddr}. Tx id: ${tx.hash}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

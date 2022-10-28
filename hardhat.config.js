@@ -9,7 +9,9 @@ module.exports = {
     networks: {
         mumbai: {
             url: process.env.MUMBAI_RPC,
-            accounts: [process.env.PRIVATE_KEY]
+            accounts: [process.env.PRIVATE_KEY],
+            glmToken: "0x2036807b0b3aaf5b1858ee822d0e111fddac7018",
+            contractPrefix: "0x111"
         }
     },
     solidity: {
