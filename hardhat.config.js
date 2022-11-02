@@ -10,7 +10,15 @@ module.exports = {
             url: process.env.MUMBAI_RPC,
             accounts: [process.env.PRIVATE_KEY],
             glmToken: "0x2036807b0b3aaf5b1858ee822d0e111fddac7018",
-            contractPrefix: "0x11111"
+            contractPrefix: "0x11111",
+            chainId: 80001
+        },
+        goerli: {
+            url: process.env.GOERLI_RPC,
+            accounts: [process.env.PRIVATE_KEY],
+            glmToken: "0x33af15c79d64b85ba14aaffaa4577949104b22e8",
+            contractPrefix: "0x77777",
+            chainId: 5
         }
     },
     solidity: {
