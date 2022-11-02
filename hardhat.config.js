@@ -19,6 +19,13 @@ module.exports = {
             glmToken: "0x33af15c79d64b85ba14aaffaa4577949104b22e8",
             contractPrefix: "0x77777",
             chainId: 5
+        },
+        polygon: {
+            url: process.env.POLYGON_RPC,
+            accounts: [process.env.PRIVATE_KEY],
+            glmToken: "0x0B220b82F3eA3B7F6d9A1D8ab58930C064A2b5Bf",
+            contractPrefix: "0x50100",
+            chainId: 137
         }
     },
     solidity: {

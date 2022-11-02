@@ -56,7 +56,9 @@ async function main() {
     const factoryAddress = process.env.CONTRACT_FACTORY;
 
     let saltNum = BigInt(1);
-    let saltStr = "0xTEMPLATETEMPLATETEMPLATETEMPLATETEMPLATETEMPLATETEMPLATETEMPLATE";
+    let templateStr = "TEMPLATETEMPLATETEMPLATETEMPLATETEMPLATETEMPLATETEMPLATETEMPLATE";
+    console.assert(templateStr.length == 64, "Template string must be 64 characters long");
+    let saltStr = "0x" + templateStr;
     let contractAddr = "";
     let bytecodeHash = ethers.utils.keccak256(bytecode);
 
@@ -65,7 +67,7 @@ async function main() {
     if (process.env.USE_PREDEFINED_SALT === "1") {
         console.log("USE_PREDEFINED_SALT is set, using predefined salt");
         saltStr = process.env.PREDEFINED_SALT;
-        let data = preparedHashTemplate.replace("TEMPLATETEMPLATETEMPLATETEMPLATETEMPLATETEMPLATETEMPLATETEMPLATE", saltStr);
+        let data = preparedHashTemplate.replace(templateStr, saltStr);
         contractAddr = "0x" + ethers.utils.keccak256(`0x${data}`).slice(-40);
     }
     else {
@@ -73,7 +75,7 @@ async function main() {
         console.log("Searching for contract address with prefix: " + prefix);
         while (true) {
             saltStr = saltNum.toString(16).padStart(64, '0');
-            let data = preparedHashTemplate.replace("TEMPLATETEMPLATETEMPLATETEMPLATETEMPLATETEMPLATETEMPLATETEMPLATE", saltStr);
+            let data = preparedHashTemplate.replace(templateStr, saltStr);
             contractAddr = "0x" + ethers.utils.keccak256(`0x${data}`).slice(-40);
             if (contractAddr.startsWith(prefix)){
                 console.log(`Computed address: ${contractAddr} with salt: ${saltStr}`);
