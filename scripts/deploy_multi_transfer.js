@@ -20,16 +20,9 @@ function prepareHashData(creatorAddress, saltHex, bytecodeHash) {
     return ['ff', creatorAddress, saltHex, bytecodeHash].map(x => x.replace('0x', '')).join('');
 }
 
-
-function encodeParam(dataType, data) {
-    const provider = new ethers.providers.JsonRpcProvider();
-
-    return web3.eth.abi.encodeParameter(dataType, data)
-}
-
 async function main() {
     let config = hre.network.config;
-    if (process.env.CONTRACT_FACTORY == undefined) {
+    if (config.contractFactory == undefined) {
         console.log("Deploy contract factory first and set CONTRACT_FACTORY address in .env file");
         return;
     }
@@ -53,7 +46,7 @@ async function main() {
 
     const bytecode = `${contractBytecode}${constructorParams}`
 
-    const factoryAddress = process.env.CONTRACT_FACTORY.toLowerCase();
+    const factoryAddress = config.contractFactory.toLowerCase();
 
     let saltNum = BigInt(1);
     let templateStr = "TEMPLATETEMPLATETEMPLATETEMPLATETEMPLATETEMPLATETEMPLATETEMPLATE";
