@@ -53,7 +53,7 @@ async function main() {
 
     const bytecode = `${contractBytecode}${constructorParams}`
 
-    const factoryAddress = process.env.CONTRACT_FACTORY;
+    const factoryAddress = process.env.CONTRACT_FACTORY.toLowerCase();
 
     let saltNum = BigInt(1);
     let templateStr = "TEMPLATETEMPLATETEMPLATETEMPLATETEMPLATETEMPLATETEMPLATETEMPLATE";
