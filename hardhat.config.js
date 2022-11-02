@@ -16,8 +16,8 @@ module.exports = {
         goerli: {
             url: process.env.GOERLI_RPC,
             accounts: [process.env.PRIVATE_KEY],
-            glmToken: "0x303de46de694cc75a2f66da93ac86c6a6eee607e",
-            contractPrefix: "0x777",
+            glmToken: "0x33af15c79d64b85ba14aaffaa4577949104b22e8",
+            contractPrefix: "0x77777",
             chainId: 5
         }
     },
