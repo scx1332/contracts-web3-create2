@@ -19,13 +19,17 @@ async function main() {
         console.log("Account balance is 0. Exiting.");
         return;
     }
+    const erc20Factory = await hre.ethers.getContractFactory("ERC20");
+    const erc20Contract = await erc20Factory.deploy(pubAddr);
+    await erc20Contract.deployed();
+    let glm_token = erc20Contract.address;
+    console.log("GLM ERC20 test token deployed to:", glm_token);
 
-    const cf = await hre.ethers.getContractFactory("ContractFactory");
-    console.log("Balance:", balance.toString());
+    const cf = await hre.ethers.getContractFactory("MultiTransferERC20");
 
-    const contractFactory = await cf.deploy();
+    const contractFactory = await cf.deploy(glm_token);
     await contractFactory.deployed();
-    console.log("ContractFactory deployed to:", contractFactory.address);
+    console.log("MultiTransferERC20 deployed to:", contractFactory.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
