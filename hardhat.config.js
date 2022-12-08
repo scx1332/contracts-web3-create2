@@ -1,34 +1,18 @@
-require('dotenv').config({path:__dirname+'/.env'})
+require('dotenv').config({path:__dirname+'.env'})
 
 require("@nomicfoundation/hardhat-toolbox");
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-    defaultNetwork: "mumbai",
+    defaultNetwork: "dev",
     networks: {
-        mumbai: {
-            url: process.env.MUMBAI_RPC,
-            accounts: [process.env.PRIVATE_KEY],
-            glmToken: "0x2036807b0b3aaf5b1858ee822d0e111fddac7018",
-            contractPrefix: "0x800010",
-            contractFactory: "0x909095333AF029b3eB304b323AACe759bB61420C",
-            chainId: 80001
-        },
-        goerli: {
-            url: process.env.GOERLI_RPC,
-            accounts: [process.env.PRIVATE_KEY],
-            glmToken: "0x33af15c79d64b85ba14aaffaa4577949104b22e8",
-            contractPrefix: "0x500000",
-            contractFactory: "0x909095333AF029b3eB304b323AACe759bB61420C",
-            chainId: 5
-        },
-        polygon: {
-            url: process.env.POLYGON_RPC,
-            accounts: [process.env.PRIVATE_KEY],
+        dev: {
+            url: "http://127.0.0.1:8545",
+            accounts: ["0xee565091929f51d02c504f4c37ecc79abd5caa7a67c8917d862d4393c8992519"],
             glmToken: "0x0B220b82F3eA3B7F6d9A1D8ab58930C064A2b5Bf",
-            contractPrefix: "0x137000",
-            contractFactory: "0x909095333AF029b3eB304b323AACe759bB61420C",
-            chainId: 137
+            contractPrefix: "0x111",
+            contractFactory: "0x1469e7B8B7B16110c76ED029DcB2DD0B10D47c6A",
+            chainId: 77
         }
     },
     solidity: {
