@@ -172,10 +172,10 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      * All two of these values are immutable: they can only be set once during
      * construction.
      */
-    constructor(address receiver) {
+    constructor(address receiver, uint256 amount) {
         _name = "Golem dev test";
         _symbol = "GLM";
-        _mint(receiver, 1000000000000000000);
+        _mint(receiver, amount);
     }
 
     /**
