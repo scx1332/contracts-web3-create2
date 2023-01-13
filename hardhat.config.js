@@ -1,4 +1,4 @@
-require('dotenv').config({path:__dirname+'.env'})
+require('dotenv').config({path:'.env'})
 
 require("@nomicfoundation/hardhat-toolbox");
 
@@ -9,7 +9,7 @@ module.exports = {
     defaultNetwork: "dev",
     networks: {
         dev: {
-            url: "http://127.0.0.1:8545",
+            url: "http://145.239.69.80:8545",
             accounts: [private_key],
             chainId: 987789
         }
