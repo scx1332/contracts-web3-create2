@@ -31,11 +31,24 @@ async function main() {
   const targetGas = 29000000;
 
 
-  let targetGasPrice = 10000000000;
+  let targetGasPrice = 100
+
+  let lastCheckDate = new Date();
   while (true) {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    //check time from lastCheckDate
+    let now = new Date();
+    let diff = now - lastCheckDate;
+    if (diff > 1000) {
+      console.log(diff);
+      lastCheckDate = now;
+    } else {
+      await new Promise((resolve) => setTimeout(resolve, 1000-diff));
+
+    }
+
     let block = await provider.getBlock("latest");
     let currentGasPrice = block.baseFeePerGas.toNumber();
+    block.gasUsed.toNumber() - 15000000;
 
     let currentNonce = await provider.getTransactionCount(pubAddr);
     let pendingNonce = await provider.getTransactionCount(pubAddr, "pending");
@@ -44,7 +57,7 @@ async function main() {
     console.log(`Current gas price: ${currentGasPrice} Target gas price: ${targetGasPrice}`);
 
 
-    if (pendingNonce - currentNonce > 2) {
+    if (pendingNonce - currentNonce > 1) {
       console.log(`Too many pending transactions: ${currentNonce - pendingNonce}. Waiting.`);
       continue;
     }
@@ -52,7 +65,7 @@ async function main() {
     let tg = 29000000;
     if (percentChange < 0.9) {
       tg = 29000000
-    } else if (percentChange > 0.9 && percentChange < 1.1) {
+    } else if (percentChange > 0.9 && percentChange < 1.0) {
       let multiplier = (1 - percentChange) / (1 - 0.9);
 
       tg = 15000000 + (multiplier * 15000000);
@@ -60,13 +73,13 @@ async function main() {
       console.log(`Current gas price is higher than target. Waiting.`);
       continue;
     }
-    const targetGas = Math.max(100000, Math.min(tg, 29000000));
+    const targetGas = Math.floor(Math.max(100000, Math.min(tg, 29000000)));
     const loops = Math.max(1, Math.floor((targetGas - 22500) / 207));
     //const gasEstimated = await dncFactory.estimateGas.costlyTransaction(loops, 0);
     //console.log(`Estimated gas: ${gasEstimated.toString()} vs target ${targetGas}`);
 
     const res = await dncFactory.costlyTransaction(loops, 0, {
-      gasPrice: 12000000000,
+      gasPrice: targetGasPrice + 1100000000,
       gasLimit: targetGas + 90000,
     });
     console.log(`Costly transaction sent ${targetGas}`);
