@@ -6,6 +6,19 @@
 // global scope, and execute the script.
 const hre = require("hardhat");
 
+function formatToGwei(wei) {
+  if (wei > 100000000000) {
+    return `${Math.round(wei / 1000000000)} Gwei`;
+  }
+  if (wei > 10000000000) {
+    return `${Math.round(wei / 100000000) / 10} Gwei`;
+  }
+  if (wei > 10000000) {
+    return `${Math.round(wei / 10000000) / 100} Gwei`;
+  }
+  return `${wei} wei`;
+}
+
 async function main() {
   const signers = await hre.ethers.getSigners();
   const signer = signers[0];
@@ -28,61 +41,74 @@ async function main() {
   //22842 - one loop
   //20722659 - 100000 loops
   //207 per loop
-  const targetGas = 29000000;
 
+  const BLOCK_GAS_LIMIT = 30000000;
+  const BLOCK_GAS_AVG = BLOCK_GAS_LIMIT / 2;
+  const BLOCK_GAS_MAX_TX = BLOCK_GAS_LIMIT - 200000;
+  const BLOCK_GAS_CHANGE = 0.125;
+  const AVERAGE_BLOCK_TIME = 5;
 
-  let targetGasPrice = 100
+  let targetGasPrice = 1 * 1000000000;
 
   let lastCheckDate = new Date();
+  let lastTargetChange = 0;
   while (true) {
     //check time from lastCheckDate
     let now = new Date();
-    let diff = now - lastCheckDate;
-    if (diff > 1000) {
-      console.log(diff);
+    if (now - lastTargetChange > 1000 * 60 * 5) {
+      targetGasPrice = 1000000000 + Math.random() * 1000 * 1000000000;
+      lastTargetChange = now;
+    }
+    if (now - lastCheckDate > 1000) {
       lastCheckDate = now;
     } else {
-      await new Promise((resolve) => setTimeout(resolve, 1000-diff));
-
+      await new Promise((resolve) => setTimeout(resolve, 1000 - (now - lastCheckDate)));
+      lastCheckDate = new Date();
     }
+    try {
+      let block = await provider.getBlock("latest");
+      let currentGasPrice = block.baseFeePerGas.toNumber();
+      let gasPriceNextBlock = Math.round((1.0 + (block.gasUsed.toNumber() - BLOCK_GAS_AVG) / BLOCK_GAS_AVG * BLOCK_GAS_CHANGE) * currentGasPrice);
 
-    let block = await provider.getBlock("latest");
-    let currentGasPrice = block.baseFeePerGas.toNumber();
-    block.gasUsed.toNumber() - 15000000;
+      console.log(`Gas price: current block: ${formatToGwei(currentGasPrice)} next block: ${formatToGwei(gasPriceNextBlock)} target: ${formatToGwei(targetGasPrice)}`);
 
-    let currentNonce = await provider.getTransactionCount(pubAddr);
-    let pendingNonce = await provider.getTransactionCount(pubAddr, "pending");
-    console.log(`Pending nonce: ${pendingNonce} Current nonce: ${currentNonce}`);
+      let currentNonce = await provider.getTransactionCount(pubAddr);
+      let pendingNonce = await provider.getTransactionCount(pubAddr, "pending");
+      if (pendingNonce - currentNonce > 0) {
+        console.log(`Too many pending transactions: ${pendingNonce - currentNonce}.`);
+        continue;
+      }
+      let percentChange = gasPriceNextBlock / targetGasPrice;
+      if (percentChange > 1.0 + BLOCK_GAS_CHANGE) {
+        console.log(`Current gas price is higher than target. Waiting.`);
+        let base = 1.0 + BLOCK_GAS_CHANGE;
+        let iters = 0;
+        while (base < percentChange) {
+          base = base * (1.0 + BLOCK_GAS_CHANGE);
+          iters++;
+        }
+        if (iters > 2) {
+          iters = iters - 2;
+          console.log(`Waiting ${iters * AVERAGE_BLOCK_TIME} seconds.`);
+          await new Promise((resolve) => setTimeout(resolve, iters * AVERAGE_BLOCK_TIME * 1000));
+        }
+        continue;
+      }
 
-    console.log(`Current gas price: ${currentGasPrice} Target gas price: ${targetGasPrice}`);
-
-
-    if (pendingNonce - currentNonce > 1) {
-      console.log(`Too many pending transactions: ${currentNonce - pendingNonce}. Waiting.`);
-      continue;
+      let targetGas = BLOCK_GAS_AVG + ((1 - percentChange) / BLOCK_GAS_CHANGE * BLOCK_GAS_AVG);
+      targetGas = Math.floor(Math.max(100000, Math.min(targetGas, BLOCK_GAS_MAX_TX)));
+      const loops = Math.max(1, Math.floor((targetGas - 22500) / 207));
+      let transactionGasPrice = Math.round((1 + BLOCK_GAS_CHANGE) * targetGasPrice + 1100000000);
+      console.log("Gas price", transactionGasPrice);
+      await dncFactory.costlyTransaction(loops, 0, {
+        gasPrice: transactionGasPrice,
+        gasLimit: targetGas + 90000
+      });
+      console.log(`Costly transaction sent: Gas: ${targetGas}, loops: ${loops}`);
     }
-    let percentChange = currentGasPrice / targetGasPrice;
-    let tg = 29000000;
-    if (percentChange < 0.9) {
-      tg = 29000000
-    } else if (percentChange > 0.9 && percentChange < 1.0) {
-      let multiplier = (1 - percentChange) / (1 - 0.9);
-
-      tg = 15000000 + (multiplier * 15000000);
-    } else {
-      console.log(`Current gas price is higher than target. Waiting.`);
-      continue;
+    catch (e) {
+      console.error(e);
     }
-    const targetGas = Math.floor(Math.max(100000, Math.min(tg, 29000000)));
-    const loops = Math.max(1, Math.floor((targetGas - 22500) / 207));
-    //const gasEstimated = await dncFactory.estimateGas.costlyTransaction(loops, 0);
-    //console.log(`Estimated gas: ${gasEstimated.toString()} vs target ${targetGas}`);
-
-    const res = await dncFactory.costlyTransaction(loops, 0, {
-      gasPrice: targetGasPrice + 1100000000,
-      gasLimit: targetGas + 90000,
-    });
-    console.log(`Costly transaction sent ${targetGas}`);
   }
 
 

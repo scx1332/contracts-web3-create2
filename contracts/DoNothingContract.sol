@@ -3,16 +3,15 @@ pragma solidity ^0.8;
 
 // Do nothing contract
 contract DoNothingContract {
-    event GasUsed(uint256 init, uint256 end);
+    event CostlyTransactionEvent(uint256 init);
 
-    function costlyTransaction(uint256 loops, uint256 init) public {
-
-
+    //pass init value 0 as argument
+    function costlyTransaction(uint256 loops2, uint256 init) public {
+        uint256 loops = loops2;
         while(loops > 0) {
             init = init * init;
             loops -= 1;
         }
-
-        emit GasUsed(init, block.basefee);
+        emit CostlyTransactionEvent(loops2 + init);
     }
 }
